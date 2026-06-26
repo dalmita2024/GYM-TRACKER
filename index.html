@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gym Tracker</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --card: #1e1e1e;
+    --border: #2a2a2a;
+    --accent: #e8ff00;
+    --accent-dim: rgba(232,255,0,0.12);
+    --text: #f0f0f0;
+    --muted: #666;
+    --danger: #ff4444;
+    --success: #44ff88;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 28px;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .sync-status {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sync-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: background 0.3s;
+  }
+  .sync-dot.ok { background: var(--success); }
+  .sync-dot.error { background: var(--danger); }
+  .sync-dot.loading { background: var(--accent); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    padding: 0 20px;
+  }
+  .tab {
+    padding: 12px 20px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  main { padding: 20px; max-width: 600px; margin: 0 auto; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .week-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+  }
+  .week-bar button {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  .week-bar button:hover { background: var(--accent-dim); }
+  .week-bar .week-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .week-bar .week-label small {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  .add-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 13px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+  .add-btn:hover { opacity: 0.88; }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    width: 100%;
+    max-width: 600px;
+    padding: 24px 20px 32px;
+  }
+  .modal h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    color: var(--accent);
+  }
+
+  .form-row { display: grid; gap: 12px; margin-bottom: 12px; }
+  .form-row.two { grid-template-columns: 1fr 1fr; }
+
+  label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  input, select {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 10px 12px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, select:focus { border-color: var(--accent); }
+
+  .modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .btn-cancel {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 12px;
+    border-radius: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .btn-save {
+    background: var(--accent);
+    border: none;
+    color: #000;
+    padding: 12px;
+    border-radius: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .day-group { margin-bottom: 24px; }
+  .day-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .exercise-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .ex-info { flex: 1; }
+  .ex-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    text-transform: uppercase;
+  }
+  .ex-meta { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .ex-stats { text-align: right; }
+  .ex-kg {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 28px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .ex-kg small { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .ex-reps { font-size: 13px; color: var(--muted); text-align: right; }
+  .del-btn {
+    background: none;
+    border: none;
+    color: var(--border);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: color 0.15s;
+    line-height: 1;
+  }
+  .del-btn:hover { color: var(--danger); }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+  /* PROGRESO */
+  .progress-filter {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .filter-chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    background: none;
+    transition: all 0.15s;
+  }
+  .filter-chip.active {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .progress-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .progress-header {
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+  }
+  .progress-header .ex-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    text-transform: uppercase;
+  }
+  .progress-header .best-badge {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--accent);
+  }
+  .progress-body {
+    border-top: 1px solid var(--border);
+    display: none;
+  }
+  .progress-body.open { display: block; }
+
+  .chart-container {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    height: 200px;
+  }
+
+  .progress-rows {}
+  .progress-row {
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .progress-row:last-child { border-bottom: none; }
+  .week-tag {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .pr-stats { display: flex; gap: 16px; align-items: center; }
+  .pr-kg {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  .pr-reps { font-size: 13px; color: var(--muted); }
+  .delta-up { color: var(--success); font-size: 12px; }
+  .delta-down { color: var(--danger); font-size: 12px; }
+
+  .no-data { color: var(--muted); font-size: 14px; text-align: center; padding: 40px; }
+
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .loading-overlay.show { display: flex; }
+  .loading-overlay p {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <p id="loading-msg">Cargando...</p>
+</div>
+
+<header>
+  <h1>⚡ Gym Tracker</h1>
+  <div class="sync-status">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-label">--</span>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-tab="registro">Registro</div>
+  <div class="tab" data-tab="progreso">Progreso</div>
+</div>
+
+<main>
+  <section class="section active" id="tab-registro">
+    <div class="week-bar">
+      <button id="prev-week">‹</button>
+      <div class="week-label">
+        <span id="week-display"></span>
+        <small id="week-dates"></small>
+      </div>
+      <button id="next-week">›</button>
+    </div>
+    <button class="add-btn" id="open-modal">+ Agregar ejercicio</button>
+    <div id="exercises-list"></div>
+  </section>
+
+  <section class="section" id="tab-progreso">
+    <div class="progress-filter" id="progress-filter"></div>
+    <div id="progress-list"></div>
+  </section>
+</main>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>Agregar ejercicio</h2>
+    <div class="form-row">
+      <div>
+        <label>Ejercicio</label>
+        <input type="text" id="ex-name" list="ex-suggestions" placeholder="Ej: Press banca" autocomplete="off">
+        <datalist id="ex-suggestions"></datalist>
+      </div>
+    </div>
+    <div class="form-row two">
+      <div>
+        <label>Peso (kg)</label>
+        <input type="number" id="ex-kg" step="0.5" min="0" placeholder="80">
+      </div>
+      <div>
+        <label>Series × Reps</label>
+        <input type="text" id="ex-reps" placeholder="4×8">
+      </div>
+    </div>
+    <div class="form-row two">
+      <div>
+        <label>Día</label>
+        <select id="ex-day">
+          <option>Lunes</option><option>Martes</option><option>Miércoles</option>
+          <option>Jueves</option><option>Viernes</option><option>Sábado</option><option>Domingo</option>
+        </select>
+      </div>
+      <div>
+        <label>Notas (opcional)</label>
+        <input type="text" id="ex-notes" placeholder="con pausa, superset...">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="close-modal">Cancelar</button>
+      <button class="btn-save" id="save-exercise">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+const BIN_ID = '6a3ed7d1da38895dfe04687e';
+const API_KEY = '$2a$10$U6uAYGu6gRorOyvdnwtvAeeqPX3BsTw2eoZ.m6Ivq27LlCZSGH9Ou';
+const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+// ─── STATE ────────────────────────────────────────────────
+const DAYS_ORDER = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+let currentWeekOffset = 0;
+let allData = { entries: [] };
+let activeFilter = null;
+let chartInstances = {};
+
+// ─── SYNC UI ─────────────────────────────────────────────
+function setSyncStatus(state, label) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  dot.className = 'sync-dot ' + state;
+  lbl.textContent = label;
+}
+
+function showLoading(msg = 'Cargando...') {
+  document.getElementById('loading-msg').textContent = msg;
+  document.getElementById('loading-overlay').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loading-overlay').classList.remove('show');
+}
+
+// ─── JSONBIN API ──────────────────────────────────────────
+async function loadData() {
+  setSyncStatus('loading', 'Cargando...');
+  try {
+    const res = await fetch(`${BASE_URL}/latest`, {
+      headers: { 'X-Access-Key': API_KEY }
+    });
+    if (!res.ok) throw new Error(res.status);
+    const json = await res.json();
+    allData = json.record || { entries: [] };
+    if (!allData.entries) allData.entries = [];
+    setSyncStatus('ok', 'Sincronizado');
+  } catch(e) {
+    setSyncStatus('error', 'Sin conexión');
+    allData = { entries: [] };
+  }
+}
+
+async function saveData() {
+  setSyncStatus('loading', 'Guardando...');
+  try {
+    const res = await fetch(BASE_URL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Access-Key': API_KEY
+      },
+      body: JSON.stringify(allData)
+    });
+    if (!res.ok) throw new Error(res.status);
+    setSyncStatus('ok', 'Guardado ✓');
+  } catch(e) {
+    setSyncStatus('error', 'Error al guardar');
+  }
+}
+
+// ─── WEEK HELPERS ─────────────────────────────────────────
+function getWeekKey(offset = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7) + offset * 7);
+  const year = d.getFullYear();
+  const jan1 = new Date(year, 0, 1);
+  const week = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+  return `${year}-W${String(week).padStart(2,'0')}`;
+}
+
+function getWeekDates(offset = 0) {
+  const mon = new Date();
+  mon.setDate(mon.getDate() - ((mon.getDay() + 6) % 7) + offset * 7);
+  const sun = new Date(mon);
+  sun.setDate(mon.getDate() + 6);
+  const fmt = d => `${d.getDate()}/${d.getMonth()+1}`;
+  return `${fmt(mon)} – ${fmt(sun)}`;
+}
+
+function getWeekLabel(offset) {
+  if (offset === 0) return 'Esta semana';
+  if (offset === -1) return 'Semana pasada';
+  if (offset === 1) return 'Próxima semana';
+  return getWeekKey(offset);
+}
+
+// ─── RENDER REGISTRO ──────────────────────────────────────
+function renderRegistro() {
+  const key = getWeekKey(currentWeekOffset);
+  document.getElementById('week-display').textContent = getWeekLabel(currentWeekOffset);
+  document.getElementById('week-dates').textContent = getWeekDates(currentWeekOffset);
+
+  const entries = allData.entries.filter(e => e.weekKey === key);
+  const container = document.getElementById('exercises-list');
+  container.innerHTML = '';
+
+  if (entries.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">🏋️</div><p>Sin registros esta semana.<br>Agrega tu primer ejercicio.</p></div>`;
+    return;
+  }
+
+  const byDay = {};
+  entries.forEach(e => {
+    if (!byDay[e.day]) byDay[e.day] = [];
+    byDay[e.day].push(e);
+  });
+
+  DAYS_ORDER.forEach(day => {
+    if (!byDay[day]) return;
+    const group = document.createElement('div');
+    group.className = 'day-group';
+    group.innerHTML = `<div class="day-label">${day}</div>`;
+    byDay[day].forEach(ex => {
+      const card = document.createElement('div');
+      card.className = 'exercise-card';
+      card.innerHTML = `
+        <div class="ex-info">
+          <div class="ex-name">${ex.name}</div>
+          <div class="ex-meta">${ex.notes || ''}</div>
+        </div>
+        <div class="ex-stats">
+          <div class="ex-kg">${ex.kg}<small> kg</small></div>
+          <div class="ex-reps">${ex.reps}</div>
+        </div>
+        <button class="del-btn" data-id="${ex.id}">✕</button>
+      `;
+      group.appendChild(card);
+    });
+    container.appendChild(group);
+  });
+
+  container.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      allData.entries = allData.entries.filter(e => e.id !== btn.dataset.id);
+      await saveData();
+      renderRegistro();
+    });
+  });
+}
+
+// ─── RENDER PROGRESO ──────────────────────────────────────
+function renderProgreso() {
+  const allNames = [...new Set(allData.entries.map(e => e.name))];
+
+  const filterEl = document.getElementById('progress-filter');
+  filterEl.innerHTML = '';
+  const allChip = document.createElement('button');
+  allChip.className = 'filter-chip' + (!activeFilter ? ' active' : '');
+  allChip.textContent = 'Todos';
+  allChip.addEventListener('click', () => { activeFilter = null; renderProgreso(); });
+  filterEl.appendChild(allChip);
+
+  allNames.forEach(name => {
+    const chip = document.createElement('button');
+    chip.className = 'filter-chip' + (activeFilter === name ? ' active' : '');
+    chip.textContent = name;
+    chip.addEventListener('click', () => { activeFilter = name; renderProgreso(); });
+    filterEl.appendChild(chip);
+  });
+
+  // destroy old charts
+  Object.values(chartInstances).forEach(c => c.destroy());
+  chartInstances = {};
+
+  const listEl = document.getElementById('progress-list');
+  listEl.innerHTML = '';
+
+  const names = activeFilter ? [activeFilter] : allNames;
+  if (names.length === 0) {
+    listEl.innerHTML = '<div class="no-data">Sin datos aún. ¡Empezá a registrar!</div>';
+    return;
+  }
+
+  names.forEach(name => {
+    // group by week, take max kg per week
+    const byWeek = {};
+    allData.entries.filter(e => e.name === name).forEach(e => {
+      if (!byWeek[e.weekKey] || e.kg > byWeek[e.weekKey].kg) {
+        byWeek[e.weekKey] = e;
+      }
+    });
+
+    const sorted = Object.values(byWeek).sort((a,b) => a.weekKey.localeCompare(b.weekKey));
+    if (sorted.length === 0) return;
+
+    const maxKg = Math.max(...sorted.map(e => e.kg));
+
+    const card = document.createElement('div');
+    card.className = 'progress-card';
+
+    const hdr = document.createElement('div');
+    hdr.className = 'progress-header';
+    hdr.innerHTML = `
+      <div class="ex-title">${name}</div>
+      <div class="best-badge">↑ ${maxKg} kg</div>
+    `;
+    card.appendChild(hdr);
+
+    const body = document.createElement('div');
+    body.className = 'progress-body';
+
+    // CHART
+    const chartWrap = document.createElement('div');
+    chartWrap.className = 'chart-container';
+    const canvas = document.createElement('canvas');
+    const chartId = 'chart-' + name.replace(/\s/g,'_');
+    canvas.id = chartId;
+    chartWrap.appendChild(canvas);
+    body.appendChild(chartWrap);
+
+    // ROWS
+    const rowsEl = document.createElement('div');
+    rowsEl.className = 'progress-rows';
+    sorted.slice().reverse().forEach((e, i, arr) => {
+      const prev = arr[i + 1];
+      let delta = '';
+      if (prev) {
+        const diff = +(e.kg - prev.kg).toFixed(1);
+        if (diff > 0) delta = `<span class="delta-up">▲ ${diff}</span>`;
+        else if (diff < 0) delta = `<span class="delta-down">▼ ${Math.abs(diff)}</span>`;
+      }
+      const row = document.createElement('div');
+      row.className = 'progress-row';
+      row.innerHTML = `
+        <span class="week-tag">${e.weekKey} · ${e.day}</span>
+        <div class="pr-stats">
+          ${delta}
+          <span class="pr-reps">${e.reps}</span>
+          <span class="pr-kg">${e.kg} kg</span>
+        </div>
+      `;
+      rowsEl.appendChild(row);
+    });
+    body.appendChild(rowsEl);
+    card.appendChild(body);
+
+    // toggle + build chart
+    hdr.addEventListener('click', () => {
+      body.classList.toggle('open');
+      if (body.classList.contains('open') && !chartInstances[chartId]) {
+        buildChart(chartId, sorted);
+      }
+    });
+
+    listEl.appendChild(card);
+  });
+}
+
+function buildChart(chartId, sorted) {
+  const labels = sorted.map(e => e.weekKey.replace(/\d{4}-/, ''));
+  const data = sorted.map(e => e.kg);
+  const maxVal = Math.max(...data);
+
+  const ctx = document.getElementById(chartId);
+  if (!ctx) return;
+
+  chartInstances[chartId] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        borderColor: '#e8ff00',
+        backgroundColor: 'rgba(232,255,0,0.08)',
+        borderWidth: 2,
+        pointBackgroundColor: data.map(v => v === maxVal ? '#e8ff00' : '#555'),
+        pointRadius: data.map(v => v === maxVal ? 6 : 4),
+        tension: 0.3,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1e1e1e',
+          borderColor: '#2a2a2a',
+          borderWidth: 1,
+          titleColor: '#666',
+          bodyColor: '#e8ff00',
+          callbacks: {
+            label: ctx => `${ctx.parsed.y} kg`
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#666', font: { size: 11 } },
+          grid: { color: '#1e1e1e' }
+        },
+        y: {
+          ticks: { color: '#666', font: { size: 11 }, callback: v => v + ' kg' },
+          grid: { color: '#2a2a2a' }
+        }
+      }
+    }
+  });
+}
+
+// ─── SUGGESTIONS ─────────────────────────────────────────
+function updateSuggestions() {
+  const names = [...new Set(allData.entries.map(e => e.name))];
+  const dl = document.getElementById('ex-suggestions');
+  dl.innerHTML = names.map(n => `<option value="${n}">`).join('');
+}
+
+// ─── MODAL ───────────────────────────────────────────────
+document.getElementById('open-modal').addEventListener('click', () => {
+  document.getElementById('ex-name').value = '';
+  document.getElementById('ex-kg').value = '';
+  document.getElementById('ex-reps').value = '';
+  document.getElementById('ex-notes').value = '';
+  const days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  document.getElementById('ex-day').value = days[new Date().getDay()];
+  updateSuggestions();
+  document.getElementById('modal').classList.add('open');
+});
+
+document.getElementById('close-modal').addEventListener('click', () => {
+  document.getElementById('modal').classList.remove('open');
+});
+
+document.getElementById('save-exercise').addEventListener('click', async () => {
+  const name = document.getElementById('ex-name').value.trim();
+  const kg = parseFloat(document.getElementById('ex-kg').value);
+  const reps = document.getElementById('ex-reps').value.trim();
+  const day = document.getElementById('ex-day').value;
+  const notes = document.getElementById('ex-notes').value.trim();
+
+  if (!name || isNaN(kg) || !reps) {
+    alert('Completá ejercicio, peso y series/reps');
+    return;
+  }
+
+  const entry = {
+    id: Date.now().toString(),
+    weekKey: getWeekKey(currentWeekOffset),
+    name, kg, reps, day, notes
+  };
+
+  allData.entries.push(entry);
+  document.getElementById('modal').classList.remove('open');
+  await saveData();
+  renderRegistro();
+});
+
+// ─── WEEK NAV ────────────────────────────────────────────
+document.getElementById('prev-week').addEventListener('click', () => { currentWeekOffset--; renderRegistro(); });
+document.getElementById('next-week').addEventListener('click', () => { currentWeekOffset++; renderRegistro(); });
+
+// ─── TABS ────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+    if (tab.dataset.tab === 'progreso') renderProgreso();
+  });
+});
+
+// ─── INIT ────────────────────────────────────────────────
+(async () => {
+  showLoading('Conectando...');
+  await loadData();
+  hideLoading();
+  renderRegistro();
+})();
+</script>
+</body>
+</html>
