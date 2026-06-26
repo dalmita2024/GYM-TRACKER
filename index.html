@@ -15,6 +15,8 @@
     --border: #2a2a2a;
     --accent: #e8ff00;
     --accent-dim: rgba(232,255,0,0.12);
+    --accent-frank: #00cfff;
+    --accent-frank-dim: rgba(0,207,255,0.12);
     --text: #f0f0f0;
     --muted: #666;
     --danger: #ff4444;
@@ -31,10 +33,71 @@
     padding-bottom: 80px;
   }
 
+  /* ── LOGIN SCREEN ── */
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 40px;
+  }
+  .login-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 42px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    text-align: center;
+  }
+  .login-sub {
+    font-size: 14px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: -32px;
+  }
+  .user-cards {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .user-card {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 150px;
+  }
+  .user-card:hover { transform: translateY(-4px); }
+  .user-card.ale:hover { border-color: var(--accent); background: var(--accent-dim); }
+  .user-card.frank:hover { border-color: var(--accent-frank); background: var(--accent-frank-dim); }
+  .user-card .avatar {
+    font-size: 52px;
+    margin-bottom: 12px;
+  }
+  .user-card .uname {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 24px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .user-card.ale .uname { color: var(--accent); }
+  .user-card.frank .uname { color: var(--accent-frank); }
+
+  /* ── APP ── */
+  #app-screen { display: none; }
+
   header {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding: 18px 20px;
+    padding: 14px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -42,30 +105,44 @@
     top: 0;
     z-index: 100;
   }
+  .header-left { display: flex; align-items: center; gap: 10px; }
   header h1 {
     font-family: 'Barlow Condensed', sans-serif;
     font-weight: 900;
-    font-size: 28px;
-    color: var(--accent);
+    font-size: 24px;
     text-transform: uppercase;
   }
-  .sync-status {
-    font-size: 12px;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  .user-badge {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
-  .sync-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--muted);
-    transition: background 0.3s;
-  }
+  .user-badge.ale { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent); }
+  .user-badge.frank { background: var(--accent-frank-dim); color: var(--accent-frank); border: 1px solid var(--accent-frank); }
+
+  .header-right { display: flex; align-items: center; gap: 10px; }
+  .sync-status { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); transition: background 0.3s; }
   .sync-dot.ok { background: var(--success); }
   .sync-dot.error { background: var(--danger); }
   .sync-dot.loading { background: var(--accent); animation: pulse 1s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .switch-user-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Barlow', sans-serif;
+  }
+  .switch-user-btn:hover { border-color: var(--muted); color: var(--text); }
 
   .tabs {
     display: flex;
@@ -85,7 +162,8 @@
     border-bottom: 2px solid transparent;
     transition: all 0.15s;
   }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab.active.ale { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab.active.frank { color: var(--accent-frank); border-bottom-color: var(--accent-frank); }
 
   main { padding: 20px; max-width: 600px; margin: 0 auto; }
   .section { display: none; }
@@ -111,24 +189,17 @@
     border-radius: 4px;
   }
   .week-bar button:hover { background: var(--accent-dim); }
-  .week-bar .week-label {
+  .week-label {
     font-family: 'Barlow Condensed', sans-serif;
     font-weight: 700;
     font-size: 16px;
     text-align: center;
     line-height: 1.2;
   }
-  .week-bar .week-label small {
-    display: block;
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 400;
-  }
+  .week-label small { display: block; font-size: 12px; color: var(--muted); font-weight: 400; }
 
   .add-btn {
     width: 100%;
-    background: var(--accent);
-    color: #000;
     border: none;
     padding: 13px;
     font-family: 'Barlow Condensed', sans-serif;
@@ -139,8 +210,10 @@
     border-radius: 8px;
     cursor: pointer;
     margin-bottom: 20px;
+    color: #000;
   }
-  .add-btn:hover { opacity: 0.88; }
+  .add-btn.ale { background: var(--accent); }
+  .add-btn.frank { background: var(--accent-frank); }
 
   .modal-overlay {
     display: none;
@@ -166,8 +239,9 @@
     font-size: 20px;
     text-transform: uppercase;
     margin-bottom: 20px;
-    color: var(--accent);
   }
+  .modal h2.ale { color: var(--accent); }
+  .modal h2.frank { color: var(--accent-frank); }
 
   .form-row { display: grid; gap: 12px; margin-bottom: 12px; }
   .form-row.two { grid-template-columns: 1fr 1fr; }
@@ -196,12 +270,7 @@
   }
   input:focus, select:focus { border-color: var(--accent); }
 
-  .modal-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 20px;
-  }
+  .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
   .btn-cancel {
     background: none;
     border: 1px solid var(--border);
@@ -215,7 +284,6 @@
     cursor: pointer;
   }
   .btn-save {
-    background: var(--accent);
     border: none;
     color: #000;
     padding: 12px;
@@ -226,6 +294,8 @@
     text-transform: uppercase;
     cursor: pointer;
   }
+  .btn-save.ale { background: var(--accent); }
+  .btn-save.frank { background: var(--accent-frank); }
 
   .day-group { margin-bottom: 24px; }
   .day-label {
@@ -263,9 +333,10 @@
     font-family: 'Barlow Condensed', sans-serif;
     font-weight: 900;
     font-size: 28px;
-    color: var(--accent);
     line-height: 1;
   }
+  .ex-kg.ale { color: var(--accent); }
+  .ex-kg.frank { color: var(--accent-frank); }
   .ex-kg small { font-size: 13px; font-weight: 600; color: var(--muted); }
   .ex-reps { font-size: 13px; color: var(--muted); text-align: right; }
   .del-btn {
@@ -281,20 +352,10 @@
   }
   .del-btn:hover { color: var(--danger); }
 
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--muted);
-  }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
   .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
 
-  /* PROGRESO */
-  .progress-filter {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-  }
+  .progress-filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
   .filter-chip {
     padding: 6px 14px;
     border-radius: 20px;
@@ -306,11 +367,8 @@
     background: none;
     transition: all 0.15s;
   }
-  .filter-chip.active {
-    background: var(--accent-dim);
-    border-color: var(--accent);
-    color: var(--accent);
-  }
+  .filter-chip.active.ale { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+  .filter-chip.active.frank { background: var(--accent-frank-dim); border-color: var(--accent-frank); color: var(--accent-frank); }
 
   .progress-card {
     background: var(--card);
@@ -332,26 +390,14 @@
     font-size: 17px;
     text-transform: uppercase;
   }
-  .progress-header .best-badge {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 700;
-    font-size: 15px;
-    color: var(--accent);
-  }
-  .progress-body {
-    border-top: 1px solid var(--border);
-    display: none;
-  }
+  .best-badge { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; }
+  .best-badge.ale { color: var(--accent); }
+  .best-badge.frank { color: var(--accent-frank); }
+
+  .progress-body { border-top: 1px solid var(--border); display: none; }
   .progress-body.open { display: block; }
+  .chart-container { padding: 16px; border-bottom: 1px solid var(--border); position: relative; height: 200px; }
 
-  .chart-container {
-    padding: 16px;
-    border-bottom: 1px solid var(--border);
-    position: relative;
-    height: 200px;
-  }
-
-  .progress-rows {}
   .progress-row {
     padding: 10px 16px;
     display: flex;
@@ -361,30 +407,19 @@
     font-size: 14px;
   }
   .progress-row:last-child { border-bottom: none; }
-  .week-tag {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 600;
-    font-size: 13px;
-    color: var(--muted);
-    text-transform: uppercase;
-  }
+  .week-tag { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 13px; color: var(--muted); text-transform: uppercase; }
   .pr-stats { display: flex; gap: 16px; align-items: center; }
-  .pr-kg {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 700;
-    font-size: 18px;
-  }
+  .pr-kg { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; }
   .pr-reps { font-size: 13px; color: var(--muted); }
   .delta-up { color: var(--success); font-size: 12px; }
   .delta-down { color: var(--danger); font-size: 12px; }
-
   .no-data { color: var(--muted); font-size: 14px; text-align: center; padding: 40px; }
 
   .loading-overlay {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.7);
+    background: rgba(0,0,0,0.8);
     z-index: 300;
     align-items: center;
     justify-content: center;
@@ -392,20 +427,8 @@
     gap: 16px;
   }
   .loading-overlay.show { display: flex; }
-  .loading-overlay p {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 18px;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  .spinner {
-    width: 40px; height: 40px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
+  .loading-overlay p { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+  .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
@@ -416,42 +439,69 @@
   <p id="loading-msg">Cargando...</p>
 </div>
 
-<header>
-  <h1>⚡ Gym Tracker</h1>
-  <div class="sync-status">
-    <div class="sync-dot" id="sync-dot"></div>
-    <span id="sync-label">--</span>
+<!-- LOGIN -->
+<div id="login-screen">
+  <div>
+    <div class="login-title">⚡ Gym Tracker</div>
+    <div class="login-sub">¿Quién entrena hoy?</div>
   </div>
-</header>
-
-<div class="tabs">
-  <div class="tab active" data-tab="registro">Registro</div>
-  <div class="tab" data-tab="progreso">Progreso</div>
+  <div class="user-cards">
+    <div class="user-card ale" data-user="alejandro">
+      <div class="avatar">💪</div>
+      <div class="uname">Alejandro</div>
+    </div>
+    <div class="user-card frank" data-user="frank">
+      <div class="avatar">🔥</div>
+      <div class="uname">Frank</div>
+    </div>
+  </div>
 </div>
 
-<main>
-  <section class="section active" id="tab-registro">
-    <div class="week-bar">
-      <button id="prev-week">‹</button>
-      <div class="week-label">
-        <span id="week-display"></span>
-        <small id="week-dates"></small>
-      </div>
-      <button id="next-week">›</button>
+<!-- APP -->
+<div id="app-screen">
+  <header>
+    <div class="header-left">
+      <h1>⚡ Gym</h1>
+      <span class="user-badge" id="user-badge"></span>
     </div>
-    <button class="add-btn" id="open-modal">+ Agregar ejercicio</button>
-    <div id="exercises-list"></div>
-  </section>
+    <div class="header-right">
+      <div class="sync-status">
+        <div class="sync-dot" id="sync-dot"></div>
+        <span id="sync-label">--</span>
+      </div>
+      <button class="switch-user-btn" id="switch-user">Cambiar</button>
+    </div>
+  </header>
 
-  <section class="section" id="tab-progreso">
-    <div class="progress-filter" id="progress-filter"></div>
-    <div id="progress-list"></div>
-  </section>
-</main>
+  <div class="tabs">
+    <div class="tab" data-tab="registro">Registro</div>
+    <div class="tab" data-tab="progreso">Progreso</div>
+  </div>
+
+  <main>
+    <section class="section" id="tab-registro">
+      <div class="week-bar">
+        <button id="prev-week">‹</button>
+        <div class="week-label">
+          <span id="week-display"></span>
+          <small id="week-dates"></small>
+        </div>
+        <button id="next-week">›</button>
+      </div>
+      <button class="add-btn" id="open-modal">+ Agregar ejercicio</button>
+      <div id="exercises-list"></div>
+    </section>
+
+    <section class="section" id="tab-progreso">
+      <div class="progress-filter" id="progress-filter"></div>
+      <div id="progress-list"></div>
+    </section>
+  </main>
+</div>
 
 <div class="modal-overlay" id="modal">
   <div class="modal">
-    <h2>Agregar ejercicio</h2>
+    <h2 id="modal-title">Agregar ejercicio</h2>
     <div class="form-row">
       <div>
         <label>Ejercicio</label>
@@ -490,49 +540,51 @@
 </div>
 
 <script>
-// ─── CONFIG ───────────────────────────────────────────────
 const BIN_ID = '6a3ed7d1da38895dfe04687e';
 const API_KEY = '$2a$10$U6uAYGu6gRorOyvdnwtvAeeqPX3BsTw2eoZ.m6Ivq27LlCZSGH9Ou';
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
-// ─── STATE ────────────────────────────────────────────────
 const DAYS_ORDER = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+let currentUser = null; // 'alejandro' | 'frank'
 let currentWeekOffset = 0;
-let allData = { entries: [] };
+let allData = { users: { alejandro: { entries: [] }, frank: { entries: [] } } };
 let activeFilter = null;
 let chartInstances = {};
+let activeTab = 'registro';
 
-// ─── SYNC UI ─────────────────────────────────────────────
+// ── HELPERS ──
+function userClass() { return currentUser === 'alejandro' ? 'ale' : 'frank'; }
+function userEntries() { return allData.users[currentUser].entries; }
+
 function setSyncStatus(state, label) {
-  const dot = document.getElementById('sync-dot');
-  const lbl = document.getElementById('sync-label');
-  dot.className = 'sync-dot ' + state;
-  lbl.textContent = label;
+  document.getElementById('sync-dot').className = 'sync-dot ' + state;
+  document.getElementById('sync-label').textContent = label;
 }
-
-function showLoading(msg = 'Cargando...') {
+function showLoading(msg) {
   document.getElementById('loading-msg').textContent = msg;
   document.getElementById('loading-overlay').classList.add('show');
 }
-function hideLoading() {
-  document.getElementById('loading-overlay').classList.remove('show');
-}
+function hideLoading() { document.getElementById('loading-overlay').classList.remove('show'); }
 
-// ─── JSONBIN API ──────────────────────────────────────────
+// ── JSONBIN ──
 async function loadData() {
   setSyncStatus('loading', 'Cargando...');
   try {
-    const res = await fetch(`${BASE_URL}/latest`, {
-      headers: { 'X-Access-Key': API_KEY }
-    });
+    const res = await fetch(`${BASE_URL}/latest`, { headers: { 'X-Access-Key': API_KEY } });
     if (!res.ok) throw new Error(res.status);
     const json = await res.json();
-    allData = json.record || { entries: [] };
-    if (!allData.entries) allData.entries = [];
+    const rec = json.record || {};
+    // migrate old format
+    if (rec.entries && !rec.users) {
+      allData = { users: { alejandro: { entries: rec.entries }, frank: { entries: [] } } };
+    } else {
+      allData = rec.users ? rec : { users: { alejandro: { entries: [] }, frank: { entries: [] } } };
+    }
+    if (!allData.users.alejandro) allData.users.alejandro = { entries: [] };
+    if (!allData.users.frank) allData.users.frank = { entries: [] };
     setSyncStatus('ok', 'Sincronizado');
   } catch(e) {
     setSyncStatus('error', 'Sin conexión');
-    allData = { entries: [] };
   }
 }
 
@@ -541,20 +593,15 @@ async function saveData() {
   try {
     const res = await fetch(BASE_URL, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Access-Key': API_KEY
-      },
+      headers: { 'Content-Type': 'application/json', 'X-Access-Key': API_KEY },
       body: JSON.stringify(allData)
     });
     if (!res.ok) throw new Error(res.status);
     setSyncStatus('ok', 'Guardado ✓');
-  } catch(e) {
-    setSyncStatus('error', 'Error al guardar');
-  }
+  } catch(e) { setSyncStatus('error', 'Error al guardar'); }
 }
 
-// ─── WEEK HELPERS ─────────────────────────────────────────
+// ── WEEK ──
 function getWeekKey(offset = 0) {
   const d = new Date();
   d.setDate(d.getDate() - ((d.getDay() + 6) % 7) + offset * 7);
@@ -563,16 +610,13 @@ function getWeekKey(offset = 0) {
   const week = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
   return `${year}-W${String(week).padStart(2,'0')}`;
 }
-
 function getWeekDates(offset = 0) {
   const mon = new Date();
   mon.setDate(mon.getDate() - ((mon.getDay() + 6) % 7) + offset * 7);
-  const sun = new Date(mon);
-  sun.setDate(mon.getDate() + 6);
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
   const fmt = d => `${d.getDate()}/${d.getMonth()+1}`;
   return `${fmt(mon)} – ${fmt(sun)}`;
 }
-
 function getWeekLabel(offset) {
   if (offset === 0) return 'Esta semana';
   if (offset === -1) return 'Semana pasada';
@@ -580,13 +624,65 @@ function getWeekLabel(offset) {
   return getWeekKey(offset);
 }
 
-// ─── RENDER REGISTRO ──────────────────────────────────────
+// ── LOGIN ──
+function selectUser(user) {
+  currentUser = user;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+
+  const uc = userClass();
+  const badge = document.getElementById('user-badge');
+  badge.textContent = user === 'alejandro' ? 'Alejandro' : 'Frank';
+  badge.className = 'user-badge ' + uc;
+
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.remove('active', 'ale', 'frank');
+  });
+  document.getElementById('open-modal').className = 'add-btn ' + uc;
+  document.getElementById('save-exercise').className = 'btn-save ' + uc;
+  document.getElementById('modal-title').className = uc;
+
+  switchTab('registro');
+}
+
+document.querySelectorAll('.user-card').forEach(card => {
+  card.addEventListener('click', () => selectUser(card.dataset.user));
+});
+
+document.getElementById('switch-user').addEventListener('click', () => {
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  currentUser = null;
+  activeFilter = null;
+  Object.values(chartInstances).forEach(c => c.destroy());
+  chartInstances = {};
+});
+
+// ── TABS ──
+function switchTab(tab) {
+  activeTab = tab;
+  const uc = userClass();
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.remove('active', 'ale', 'frank');
+    if (t.dataset.tab === tab) { t.classList.add('active', uc); }
+  });
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  if (tab === 'registro') renderRegistro();
+  if (tab === 'progreso') renderProgreso();
+}
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+});
+
+// ── REGISTRO ──
 function renderRegistro() {
   const key = getWeekKey(currentWeekOffset);
   document.getElementById('week-display').textContent = getWeekLabel(currentWeekOffset);
   document.getElementById('week-dates').textContent = getWeekDates(currentWeekOffset);
 
-  const entries = allData.entries.filter(e => e.weekKey === key);
+  const entries = userEntries().filter(e => e.weekKey === key);
   const container = document.getElementById('exercises-list');
   container.innerHTML = '';
 
@@ -596,10 +692,7 @@ function renderRegistro() {
   }
 
   const byDay = {};
-  entries.forEach(e => {
-    if (!byDay[e.day]) byDay[e.day] = [];
-    byDay[e.day].push(e);
-  });
+  entries.forEach(e => { if (!byDay[e.day]) byDay[e.day] = []; byDay[e.day].push(e); });
 
   DAYS_ORDER.forEach(day => {
     if (!byDay[day]) return;
@@ -615,7 +708,7 @@ function renderRegistro() {
           <div class="ex-meta">${ex.notes || ''}</div>
         </div>
         <div class="ex-stats">
-          <div class="ex-kg">${ex.kg}<small> kg</small></div>
+          <div class="ex-kg ${userClass()}">${ex.kg}<small> kg</small></div>
           <div class="ex-reps">${ex.reps}</div>
         </div>
         <button class="del-btn" data-id="${ex.id}">✕</button>
@@ -627,60 +720,85 @@ function renderRegistro() {
 
   container.querySelectorAll('.del-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
-      allData.entries = allData.entries.filter(e => e.id !== btn.dataset.id);
+      allData.users[currentUser].entries = userEntries().filter(e => e.id !== btn.dataset.id);
       await saveData();
       renderRegistro();
     });
   });
 }
 
-// ─── RENDER PROGRESO ──────────────────────────────────────
+document.getElementById('prev-week').addEventListener('click', () => { currentWeekOffset--; renderRegistro(); });
+document.getElementById('next-week').addEventListener('click', () => { currentWeekOffset++; renderRegistro(); });
+
+// ── MODAL ──
+document.getElementById('open-modal').addEventListener('click', () => {
+  document.getElementById('ex-name').value = '';
+  document.getElementById('ex-kg').value = '';
+  document.getElementById('ex-reps').value = '';
+  document.getElementById('ex-notes').value = '';
+  const days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  document.getElementById('ex-day').value = days[new Date().getDay()];
+  const names = [...new Set(userEntries().map(e => e.name))];
+  document.getElementById('ex-suggestions').innerHTML = names.map(n => `<option value="${n}">`).join('');
+  document.getElementById('modal').classList.add('open');
+});
+document.getElementById('close-modal').addEventListener('click', () => document.getElementById('modal').classList.remove('open'));
+
+document.getElementById('save-exercise').addEventListener('click', async () => {
+  const name = document.getElementById('ex-name').value.trim();
+  const kg = parseFloat(document.getElementById('ex-kg').value);
+  const reps = document.getElementById('ex-reps').value.trim();
+  const day = document.getElementById('ex-day').value;
+  const notes = document.getElementById('ex-notes').value.trim();
+  if (!name || isNaN(kg) || !reps) { alert('Completá ejercicio, peso y series/reps'); return; }
+  allData.users[currentUser].entries.push({
+    id: Date.now().toString(), weekKey: getWeekKey(currentWeekOffset), name, kg, reps, day, notes
+  });
+  document.getElementById('modal').classList.remove('open');
+  await saveData();
+  renderRegistro();
+});
+
+// ── PROGRESO ──
 function renderProgreso() {
-  const allNames = [...new Set(allData.entries.map(e => e.name))];
+  const entries = userEntries();
+  const allNames = [...new Set(entries.map(e => e.name))];
+  const uc = userClass();
 
   const filterEl = document.getElementById('progress-filter');
   filterEl.innerHTML = '';
   const allChip = document.createElement('button');
-  allChip.className = 'filter-chip' + (!activeFilter ? ' active' : '');
+  allChip.className = 'filter-chip' + (!activeFilter ? ` active ${uc}` : '');
   allChip.textContent = 'Todos';
   allChip.addEventListener('click', () => { activeFilter = null; renderProgreso(); });
   filterEl.appendChild(allChip);
-
   allNames.forEach(name => {
     const chip = document.createElement('button');
-    chip.className = 'filter-chip' + (activeFilter === name ? ' active' : '');
+    chip.className = 'filter-chip' + (activeFilter === name ? ` active ${uc}` : '');
     chip.textContent = name;
     chip.addEventListener('click', () => { activeFilter = name; renderProgreso(); });
     filterEl.appendChild(chip);
   });
 
-  // destroy old charts
   Object.values(chartInstances).forEach(c => c.destroy());
   chartInstances = {};
 
   const listEl = document.getElementById('progress-list');
   listEl.innerHTML = '';
-
   const names = activeFilter ? [activeFilter] : allNames;
-  if (names.length === 0) {
-    listEl.innerHTML = '<div class="no-data">Sin datos aún. ¡Empezá a registrar!</div>';
-    return;
-  }
+  if (names.length === 0) { listEl.innerHTML = '<div class="no-data">Sin datos aún. ¡Empezá a registrar!</div>'; return; }
+
+  const accentColor = uc === 'ale' ? '#e8ff00' : '#00cfff';
 
   names.forEach(name => {
-    // group by week, take max kg per week
     const byWeek = {};
-    allData.entries.filter(e => e.name === name).forEach(e => {
-      if (!byWeek[e.weekKey] || e.kg > byWeek[e.weekKey].kg) {
-        byWeek[e.weekKey] = e;
-      }
+    entries.filter(e => e.name === name).forEach(e => {
+      if (!byWeek[e.weekKey] || e.kg > byWeek[e.weekKey].kg) byWeek[e.weekKey] = e;
     });
-
     const sorted = Object.values(byWeek).sort((a,b) => a.weekKey.localeCompare(b.weekKey));
-    if (sorted.length === 0) return;
+    if (!sorted.length) return;
 
     const maxKg = Math.max(...sorted.map(e => e.kg));
-
     const card = document.createElement('div');
     card.className = 'progress-card';
 
@@ -688,25 +806,22 @@ function renderProgreso() {
     hdr.className = 'progress-header';
     hdr.innerHTML = `
       <div class="ex-title">${name}</div>
-      <div class="best-badge">↑ ${maxKg} kg</div>
+      <div class="best-badge ${uc}">↑ ${maxKg} kg</div>
     `;
     card.appendChild(hdr);
 
     const body = document.createElement('div');
     body.className = 'progress-body';
 
-    // CHART
     const chartWrap = document.createElement('div');
     chartWrap.className = 'chart-container';
     const canvas = document.createElement('canvas');
-    const chartId = 'chart-' + name.replace(/\s/g,'_');
+    const chartId = `chart-${name.replace(/\s/g,'_')}-${currentUser}`;
     canvas.id = chartId;
     chartWrap.appendChild(canvas);
     body.appendChild(chartWrap);
 
-    // ROWS
     const rowsEl = document.createElement('div');
-    rowsEl.className = 'progress-rows';
     sorted.slice().reverse().forEach((e, i, arr) => {
       const prev = arr[i + 1];
       let delta = '';
@@ -719,22 +834,53 @@ function renderProgreso() {
       row.className = 'progress-row';
       row.innerHTML = `
         <span class="week-tag">${e.weekKey} · ${e.day}</span>
-        <div class="pr-stats">
-          ${delta}
-          <span class="pr-reps">${e.reps}</span>
-          <span class="pr-kg">${e.kg} kg</span>
-        </div>
+        <div class="pr-stats">${delta}<span class="pr-reps">${e.reps}</span><span class="pr-kg">${e.kg} kg</span></div>
       `;
       rowsEl.appendChild(row);
     });
     body.appendChild(rowsEl);
     card.appendChild(body);
 
-    // toggle + build chart
     hdr.addEventListener('click', () => {
       body.classList.toggle('open');
       if (body.classList.contains('open') && !chartInstances[chartId]) {
-        buildChart(chartId, sorted);
+        const labels = sorted.map(e => e.weekKey.replace(/\d{4}-/, ''));
+        const data = sorted.map(e => e.kg);
+        chartInstances[chartId] = new Chart(canvas, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              data,
+              borderColor: accentColor,
+              backgroundColor: accentColor + '15',
+              borderWidth: 2,
+              pointBackgroundColor: data.map(v => v === maxKg ? accentColor : '#555'),
+              pointRadius: data.map(v => v === maxKg ? 6 : 4),
+              tension: 0.3,
+              fill: true,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#1e1e1e',
+                borderColor: '#2a2a2a',
+                borderWidth: 1,
+                titleColor: '#666',
+                bodyColor: accentColor,
+                callbacks: { label: ctx => `${ctx.parsed.y} kg` }
+              }
+            },
+            scales: {
+              x: { ticks: { color: '#666', font: { size: 11 } }, grid: { color: '#1e1e1e' } },
+              y: { ticks: { color: '#666', font: { size: 11 }, callback: v => v + ' kg' }, grid: { color: '#2a2a2a' } }
+            }
+          }
+        });
       }
     });
 
@@ -742,127 +888,11 @@ function renderProgreso() {
   });
 }
 
-function buildChart(chartId, sorted) {
-  const labels = sorted.map(e => e.weekKey.replace(/\d{4}-/, ''));
-  const data = sorted.map(e => e.kg);
-  const maxVal = Math.max(...data);
-
-  const ctx = document.getElementById(chartId);
-  if (!ctx) return;
-
-  chartInstances[chartId] = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        data,
-        borderColor: '#e8ff00',
-        backgroundColor: 'rgba(232,255,0,0.08)',
-        borderWidth: 2,
-        pointBackgroundColor: data.map(v => v === maxVal ? '#e8ff00' : '#555'),
-        pointRadius: data.map(v => v === maxVal ? 6 : 4),
-        tension: 0.3,
-        fill: true,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#1e1e1e',
-          borderColor: '#2a2a2a',
-          borderWidth: 1,
-          titleColor: '#666',
-          bodyColor: '#e8ff00',
-          callbacks: {
-            label: ctx => `${ctx.parsed.y} kg`
-          }
-        }
-      },
-      scales: {
-        x: {
-          ticks: { color: '#666', font: { size: 11 } },
-          grid: { color: '#1e1e1e' }
-        },
-        y: {
-          ticks: { color: '#666', font: { size: 11 }, callback: v => v + ' kg' },
-          grid: { color: '#2a2a2a' }
-        }
-      }
-    }
-  });
-}
-
-// ─── SUGGESTIONS ─────────────────────────────────────────
-function updateSuggestions() {
-  const names = [...new Set(allData.entries.map(e => e.name))];
-  const dl = document.getElementById('ex-suggestions');
-  dl.innerHTML = names.map(n => `<option value="${n}">`).join('');
-}
-
-// ─── MODAL ───────────────────────────────────────────────
-document.getElementById('open-modal').addEventListener('click', () => {
-  document.getElementById('ex-name').value = '';
-  document.getElementById('ex-kg').value = '';
-  document.getElementById('ex-reps').value = '';
-  document.getElementById('ex-notes').value = '';
-  const days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  document.getElementById('ex-day').value = days[new Date().getDay()];
-  updateSuggestions();
-  document.getElementById('modal').classList.add('open');
-});
-
-document.getElementById('close-modal').addEventListener('click', () => {
-  document.getElementById('modal').classList.remove('open');
-});
-
-document.getElementById('save-exercise').addEventListener('click', async () => {
-  const name = document.getElementById('ex-name').value.trim();
-  const kg = parseFloat(document.getElementById('ex-kg').value);
-  const reps = document.getElementById('ex-reps').value.trim();
-  const day = document.getElementById('ex-day').value;
-  const notes = document.getElementById('ex-notes').value.trim();
-
-  if (!name || isNaN(kg) || !reps) {
-    alert('Completá ejercicio, peso y series/reps');
-    return;
-  }
-
-  const entry = {
-    id: Date.now().toString(),
-    weekKey: getWeekKey(currentWeekOffset),
-    name, kg, reps, day, notes
-  };
-
-  allData.entries.push(entry);
-  document.getElementById('modal').classList.remove('open');
-  await saveData();
-  renderRegistro();
-});
-
-// ─── WEEK NAV ────────────────────────────────────────────
-document.getElementById('prev-week').addEventListener('click', () => { currentWeekOffset--; renderRegistro(); });
-document.getElementById('next-week').addEventListener('click', () => { currentWeekOffset++; renderRegistro(); });
-
-// ─── TABS ────────────────────────────────────────────────
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
-    if (tab.dataset.tab === 'progreso') renderProgreso();
-  });
-});
-
-// ─── INIT ────────────────────────────────────────────────
+// ── INIT ──
 (async () => {
   showLoading('Conectando...');
   await loadData();
   hideLoading();
-  renderRegistro();
 })();
 </script>
 </body>
